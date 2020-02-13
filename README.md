@@ -6,11 +6,11 @@
 3. 执行npm install   
 
 ## 查询：  
-> node withdraw.js -q <eth-address>
+> node withdraw.js -q {eth-address}
 
 ## 执行提现：   
 提现发起的账号是.privatekey私钥对应的账号，可以给任何的账号做提现。  
-> node withdraw.js -i <account-id> <token-id>
+> node withdraw.js -i {user-eth-address} {token-id}
 
 ## 示例：  
 执行`node withdraw.js -q 0x6bd5d6fE42419e9039323f9D25B6484F5344f00D`，得到输出：
