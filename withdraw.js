@@ -12,6 +12,7 @@ const web3 = new Web3(provider);
 
 const zeroAddress = "0x" + "00".repeat(20);
 const lrcAddress = "0xBBbbCA6A901c926F240b89EacB641d8Aec7AEafD";
+const usdtAddress = "0xdac17f958d2ee523a2206206994597c13d831ec7";
 const exchangeAddr = "0x7D3D221A8D8AbDd868E8e88811fFaF033e68E108";
 
 function getAccountInfo(accountId) {
@@ -47,6 +48,18 @@ function printAccountAndTokenInfo(accountId) {
   return;
 }
 
+function getTokenAddr(tokenId) {
+  if (tokenId == "0") {
+    return zeroAddress;
+  } else if (tokenId == "2") {
+    return lrcAddress;
+  } else if (tokenId == "3") {
+    return usdtAddress;
+  } else {
+    return undefined;
+  }
+}
+
 async function withdraw(accountAddr, tokenId) {
   const accountId = await queryAccountId(accountAddr);
   console.log("开始提现，账号ID:", accountId, "; tokenID:", tokenId);
@@ -70,24 +83,20 @@ async function withdraw(accountAddr, tokenId) {
     return;
   }
 
+  const tokenAddress = getTokenAddr(tokenId);
+  if (!tokenAddress) {
+    console.log("不支持的tokenId：", tokenId);
+    process.exit(1);
+  }
+
   const exchangeInstance = new web3.eth.Contract(JSON.parse(exchangeABI), exchangeAddr);
   const sendOpts = { from: owner, gas: 2200000, gasPrice: 3000000000 };
 
-  // console.log(
-  //   lrcAddress,
-  //   accountInfo.publicX,
-  //   accountInfo.publicY,
-  //   accountInfo.nonce,
-  //   tokenInfo.balance,
-  //   tokenInfo.tradeHistoryRoot,
-  //   accountInfo.path,
-  //   tokenInfo.path,
-  // );
   console.log("发送以太坊提现交易...");
 
   const tx = await exchangeInstance.methods.withdrawFromMerkleTreeFor(
     accountAddr,
-    lrcAddress,
+    tokenAddress,
     accountInfo.publicX,
     accountInfo.publicY,
     accountInfo.nonce,
