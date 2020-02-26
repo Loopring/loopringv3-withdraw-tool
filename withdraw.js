@@ -33,8 +33,8 @@ function getTokenInfo(accountInfo, tokenId) {
   return undefined;
 }
 
-function printAccountAndTokenInfo(accountId) {
-  console.log("accountID:", accountId);
+function printAccountAndTokenInfo(accountId, accountAddr) {
+  console.log("accountID:", accountId, "; account Address:", accountAddr);
 
   const accountInfo = getAccountInfo(accountId);
 
@@ -121,17 +121,45 @@ async function queryAccountId(addr) {
   return accountInfo.accountID;
 }
 
+async function getAllAccounts() {
+  const exchangeInstance = new web3.eth.Contract(JSON.parse(exchangeABI), exchangeAddr);
+  const allAccountCreatedEvents = await exchangeInstance.getPastEvents(
+    "AccountCreated",
+    {
+      fromBlock: 0,
+      toBlock: "latest",
+    }
+  ).then((events) => {
+    return events;
+  });
+
+  console.log("allAccountCreatedEvents length:", allAccountCreatedEvents.length);
+  const result = [];
+  for (const e of allAccountCreatedEvents) {
+    const item = [e.returnValues.id, e.returnValues.owner];
+    result.push(item);
+  }
+
+  return result;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   if (args[0] == "-q") {
     const userAddr = args[1];
     const accountId = await queryAccountId(userAddr);
-    printAccountAndTokenInfo(accountId);
+    printAccountAndTokenInfo(accountId, userAddr);
     process.exit(0);
   } else if (args[0] == "-i") {
     const accountAddr = args[1];
     const tokenId = args[2];
     await withdraw(accountAddr, tokenId);
+  } else if (args[0] == "-a") {
+    const allAccounts = await getAllAccounts();
+    for (const account of allAccounts) {
+      printAccountAndTokenInfo(account[0], account[1]);
+    }
+    process.exit(0);
   } else {
     console.log("Error: Invalid arguments");
     console.log("Options:");
